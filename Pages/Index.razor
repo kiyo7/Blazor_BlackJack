@@ -1,0 +1,129 @@
+﻿@page "/"
+
+<PageTitle>BlackJack</PageTitle>
+
+<h1>BlazorでBlackjack作って見る</h1>
+<p>ボタンを押してゲームスタート</p>
+<button @onclick="StartNewGame">ゲーム開始</button>
+<p>ディーラー: @string.Join(", ", dealerCards)</p>
+<p>プレイヤー: @string.Join(", ", playerCards)</p>
+<p>あなたの合計: @playerTotal</p>
+  @if (hitFlag)
+    {
+     <button @onclick="Hit">ヒット</button>
+    <button @onclick="Stand">ステイ</button>
+
+    }
+<div >結果: @resultMessage</div>
+
+@code {
+    List<int> deck = new List<int>();
+    List<int> dealerCards = new List<int>();
+    List<int> playerCards = new List<int>();
+    int playerTotal;
+
+   string resultMessage = "";
+   bool hitFlag = true;
+
+    void StartNewGame()
+    {
+      resultMessage = "";
+      hitFlag = true;
+        deck = GenerateDeck();
+        ShuffleDeck(deck);
+        dealerCards = new List<int> { DrawCard(deck), DrawCard(deck) };
+        playerCards = new List<int> { DrawCard(deck), DrawCard(deck) };
+        playerTotal = CalculateTotal(playerCards);
+    }
+
+    void Hit()
+    {
+        playerCards.Add(DrawCard(deck));
+        playerTotal = CalculateTotal(playerCards);
+    }
+
+    void Stand()
+    {
+        hitFlag =false;
+        while (CalculateTotal(dealerCards) < 17)
+        { 
+            dealerCards.Add(DrawCard(deck));
+        }
+        int dealerTotal = CalculateTotal(dealerCards);
+        int playerTotal = CalculateTotal(playerCards);
+        if (dealerTotal > 21 || dealerTotal < playerTotal)
+        {
+           resultMessage = "あなたの勝ちです";
+        }
+        else if (dealerTotal > playerTotal)
+        {
+          resultMessage = "あなたの負けです";
+        }
+        else
+        {
+           resultMessage = "引き分けです";
+        }
+    }
+
+    List<int> GenerateDeck()
+    {
+        List<int> deck = new List<int>();
+        for (int i = 1; i <= 13; i++)
+        {
+            for (int j = 0; j < 4; j++)
+            {
+                deck.Add(i);
+            }
+        }
+        return deck;
+    }
+
+    void ShuffleDeck(List<int> deck)
+    {
+        Random rng = new Random();
+        int n = deck.Count;
+        while (n > 1)
+        {
+            n--;
+            int k = rng.Next(n + 1);
+            int value = deck[k];
+            deck[k] = deck[n];
+            deck[n] = value;
+        }
+    }
+
+    int DrawCard(List<int> deck)
+    {
+        int card = deck[0];
+        deck.RemoveAt(0);
+        return card;
+    }
+
+    int CalculateTotal(List<int> cards)
+    {
+        int total = 0;
+        int aces = 0;
+        foreach (int card in cards)
+        {
+            if (card == 1)
+            {
+                aces++;
+                total += 11;
+            }
+            else if (card >= 10)
+            {
+                total += 10;
+            }
+            else
+            {
+                total += card;
+            }
+        }
+        while (total > 21 && aces > 0)
+        {
+            total -= 10;
+            aces--;
+        }
+        return total;
+    }
+}
