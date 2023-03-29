@@ -2,19 +2,41 @@
 
 <PageTitle>BlackJack</PageTitle>
 
-<h1>BlazorでBlackjack作って見る</h1>
-<p>ボタンを押してゲームスタート</p>
-<button @onclick="StartNewGame">ゲーム開始</button>
-<p>ディーラー: @string.Join(", ", dealerCards)</p>
-<p>プレイヤー: @string.Join(", ", playerCards)</p>
-<p>あなたの合計: @playerTotal</p>
+<h1>BlazorでBlackjack作ってみる</h1>
+
+<p class="text-center">↓↓  ボタンを押してゲームスタート!!  ↓↓</p>
+<div class="text-center">
+  <button class="btn btn-danger mb-5" @onclick="StartNewGame">ゲーム開始</button>
+</div>
+<div class="container mt-3">
+  <div class="row">
+    <div class="col">
+      <p class="h3">ディーラー: @string.Join(", ", dealerCards)</p>
+    </div>
+    <div class="col">
+      <p class="h3">あなた: @string.Join(", ", playerCards)</p>
+    </div>
+  </div>
+</div>
+
+
+
+
   @if (hitFlag)
     {
-     <button @onclick="Hit">ヒット</button>
-    <button @onclick="Stand">ステイ</button>
+    <div class="text-center mt-5">
+      <button class="btn btn-primary" @onclick="Hit">ヒット</button>
+      <button class="btn btn-warning" @onclick="Stand">スタンド</button>
+    </div>
 
     }
-<div >結果: @resultMessage</div>
+
+ <p class="h4 mt-5">あなたの合計: @playerTotal</p>
+
+ @if(resultFlag)
+  {
+  <div class="h1 mt-5 center-block" >結果: @resultMessage</div>
+ }
 
 @code {
     List<int> deck = new List<int>();
@@ -22,13 +44,17 @@
     List<int> playerCards = new List<int>();
     int playerTotal;
 
+
    string resultMessage = "";
-   bool hitFlag = true;
+   bool hitFlag = false;
+
+   bool resultFlag = false;
 
     void StartNewGame()
     {
       resultMessage = "";
       hitFlag = true;
+      resultFlag = false;
         deck = GenerateDeck();
         ShuffleDeck(deck);
         dealerCards = new List<int> { DrawCard(deck), DrawCard(deck) };
@@ -44,24 +70,25 @@
 
     void Stand()
     {
-        hitFlag =false;
+        hitFlag = false;
+        resultFlag = true;
         while (CalculateTotal(dealerCards) < 17)
         { 
             dealerCards.Add(DrawCard(deck));
         }
         int dealerTotal = CalculateTotal(dealerCards);
         int playerTotal = CalculateTotal(playerCards);
-        if (dealerTotal > 21 || dealerTotal < playerTotal)
+        if (dealerTotal > 21 && playerTotal > 21 || dealerTotal == playerTotal)
         {
-           resultMessage = "あなたの勝ちです";
+           resultMessage = "引き分けです";
         }
-        else if (dealerTotal > playerTotal)
+        else if (dealerTotal > 21 && dealerTotal > playerTotal || playerTotal > 21)
         {
           resultMessage = "あなたの負けです";
         }
         else
         {
-           resultMessage = "引き分けです";
+           resultMessage = "あなたの勝ちです";
         }
     }
 
